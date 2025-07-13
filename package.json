@@ -1,0 +1,18 @@
+{
+  "name": "lesetool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@directus-labs/table-view-panel": "^1.0.0",
+    "directus": "^11.9.2",
+    "directus-extension-sql-query-panel": "^1.2.1",
+    "pg": "^8.16.3"
+  }
+}
