@@ -1,3 +1,4 @@
+-- Active: 1752189674258@@postgres@5432@directus
 CREATE MATERIALIZED VIEW joined_energy_data_mv AS
 SELECT
   pc.timestamp,
