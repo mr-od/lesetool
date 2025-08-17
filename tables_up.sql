@@ -107,8 +107,6 @@ CREATE TABLE "lcr" (
   "lcr_cost" numeric NOT NULL
 );
 
-
-
 CREATE TABLE "scenario" (
   "id" serial PRIMARY KEY,
   "site_code" varchar,
@@ -131,6 +129,7 @@ CREATE TABLE "scenario" (
   "created_at" timestamptz NOT NULL DEFAULT 'now()',
   "updated_at" timestamptz NOT NULL DEFAULT 'now()'
 );
+
 ALTER TABLE "lcc" ADD FOREIGN KEY ("lcc_code") REFERENCES "lcc_dataset" ("lcc_code");
 
 ALTER TABLE "lcr" ADD FOREIGN KEY ("lcr_code") REFERENCES "lcr_dataset" ("lcr_code");

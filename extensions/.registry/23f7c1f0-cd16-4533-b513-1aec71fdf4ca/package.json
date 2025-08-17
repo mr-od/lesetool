@@ -1,0 +1,44 @@
+{
+	"name": "directus-extension-html-panel",
+	"description": "This is an extension providing the HTML panel for Directus - it aims to make displaying arbitrary HTML content inside Directus Insights dashboards possible.",
+	"icon": "extension",
+	"version": "1.0.1",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-extension-panel"
+	],
+	"author": {
+	  "name": "speedyweb",
+	  "email": "biuro@speedyweb.pl"
+	},
+	"repository": {
+	  "type": "git",
+	  "url": "https://github.com/SpeedyWebHub/directus-extension-html-panel"
+	},
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"directus:extension": {
+		"type": "panel",
+		"path": "dist/index.js",
+		"source": "src/index.ts",
+		"host": "^10.10.0"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link",
+		"validate": "directus-extension validate"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "13.1.0",
+		"typescript": "^5.8.3",
+		"vue": "^3.5.14"
+	},
+	"dependencies": {
+		"apexcharts": "^4.7.0",
+		"sass": "^1.89.2"
+	}
+}

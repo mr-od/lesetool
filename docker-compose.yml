@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: directus
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: directus
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./tables_up.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./materialized_view.sql:/docker-entrypoint-initdb.d/02-views.sql
+      - ./summary.sql:/docker-entrypoint-initdb.d/03-summary.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U directus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  directus:
+    build: .
+    ports:
+      - "8055:8055"
+    environment:
+      # Database
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: directus
+      DB_USER: directus
+      DB_PASSWORD: directus
+      
+      # Cache & Sessions
+      CACHE_ENABLED: true
+      CACHE_STORE: redis
+      REDIS: redis://redis:6379
+      SESSION_STORE: redis
+      SESSION_REDIS: redis://redis:6379
+      
+      # Security
+      KEY: 255d861b-5ea1-5996-9aa3-922530ec40b1
+      SECRET: 6116487b-cda1-52c2-b5b5-c8022c45e263
+      
+      # Admin user (change these!)
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: d1r3ctu5
+      
+      # General
+      PUBLIC_URL: http://localhost:8055
+      LOG_LEVEL: info
+      
+      # Extensions
+      EXTENSIONS_PATH: /directus/extensions
+      
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_database:/directus/database
+      - directus_extensions:/directus/extensions
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8055/server/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  directus_uploads:
+  directus_database:
+  directus_extensions:

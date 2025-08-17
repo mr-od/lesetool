@@ -1,0 +1,38 @@
+# Docker Registry Authentication Examples
+
+## For Private Docker Registry
+# Create ~/.docker/config.json with:
+{
+  "auths": {
+    "your-registry.company.com": {
+      "auth": "base64(username:password)"
+    }
+  }
+}
+
+# Or use docker login:
+docker login your-registry.company.com
+
+## For AWS ECR
+# Install AWS CLI and configure:
+aws configure
+# Or use IAM roles on EC2
+
+# Login command:
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-west-2.amazonaws.com
+
+## For Google Container Registry (GCR)
+# Install gcloud CLI and configure:
+gcloud auth configure-docker
+
+## For Azure Container Registry (ACR)
+# Install Azure CLI and configure:
+az acr login --name myregistry
+
+## Environment Variables for CI/CD
+export REGISTRY_HOST=your-registry.company.com
+export REGISTRY_USER=your-username
+export REGISTRY_PASS=your-password
+
+# For Docker login in scripts:
+echo $REGISTRY_PASS | docker login $REGISTRY_HOST --username $REGISTRY_USER --password-stdin
