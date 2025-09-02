@@ -1,21 +1,8 @@
 <div align="center">
  <br/>
-<picture>
-  <source
-    srcset="https://raw.githubusercontent.com/Unitech/pm2/master/pres/pm2-v4.png"
-    width=710px
-    media="(prefers-color-scheme: light)"
-  />
-  <source
-    srcset="https://raw.githubusercontent.com/Unitech/pm2/development/pres/pm2-v4-dark-mode.png"
-    width=710px
-    media="(prefers-color-scheme: dark), (prefers-color-scheme: no-preference)"
-  />
-  <img src="https://raw.githubusercontent.com/Unitech/pm2/master/pres/pm2-v4.png" />
-</picture>
 
-  <br/>
-<br/>
+![https://raw.githubusercontent.com/Unitech/pm2/master/pres/pm2-logo-2.png](https://raw.githubusercontent.com/Unitech/pm2/master/pres/pm2-logo-2.png)
+
 <b>P</b>(rocess) <b>M</b>(anager) <b>2</b><br/>
   <i>Runtime Edition</i>
 <br/><br/>
@@ -39,7 +26,7 @@
 </div>
 
 
-PM2 is a production process manager for Node.js applications with a built-in load balancer. It allows you to keep applications alive forever, to reload them without downtime and to facilitate common system admin tasks.
+PM2 is a production process manager for Node.js/Bun applications with a built-in load balancer. It allows you to keep applications alive forever, to reload them without downtime and to facilitate common system admin tasks.
 
 Starting an application in production mode is as easy as:
 
@@ -51,22 +38,31 @@ PM2 is constantly assailed by [more than 1800 tests](https://github.com/Unitech/
 
 Official website: [https://pm2.keymetrics.io/](https://pm2.keymetrics.io/)
 
-Works on Linux (stable) & macOS (stable) & Windows (stable). All Node.js versions are supported starting Node.js 12.X.
+Works on Linux (stable) & macOS (stable) & Windows (stable). All Node.js versions are supported starting Node.js 12.X and Bun since v1
 
 
-### Installing PM2
+## Installing PM2
 
-With NPM:
+### With NPM
 
 ```bash
 $ npm install pm2 -g
 ```
 
-You can install Node.js easily with [NVM](https://github.com/nvm-sh/nvm#installing-and-updating) or [FNM](https://github.com/Schniz/fnm).
+### With Bun
+
+```bash
+$ bun install pm2 -g
+```
+**Please note that you might need to symlink node to bun if you only want to use bun via `sudo ln -s /home/$USER/.bun/bin/bun /usr/bin/node`**
+
+___
+
+You can install Node.js easily with [NVM](https://github.com/nvm-sh/nvm#installing-and-updating) or [FNM](https://github.com/Schniz/fnm) or install Bun with `curl -fsSL https://bun.sh/install | bash`
 
 ### Start an application
 
-You can start any application (Node.js, Python, Ruby, binaries in $PATH...) like that:
+You can start any application (Node.js, Bun, and also Python, Ruby, binaries in $PATH...) like that:
 
 ```bash
 $ pm2 start app.js

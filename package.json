@@ -10,8 +10,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@directus-labs/spreadsheet-layout": "^1.0.2",
     "@directus-labs/table-view-panel": "^1.0.0",
     "directus": "^11.9.2",
+    "directus-extension-editable-layout": "^1.1.1",
+    "directus-extension-poms-selector": "^0.2.0",
     "directus-extension-sql-query-panel": "^1.2.1",
     "pg": "^8.16.3"
   }

@@ -12,12 +12,12 @@ var BindingNamespace;
     BindingNamespace["Post"] = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST";
     BindingNamespace["SimpleSign"] = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign";
     BindingNamespace["Artifact"] = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact";
-})(BindingNamespace || (exports.BindingNamespace = BindingNamespace = {}));
+})(BindingNamespace = exports.BindingNamespace || (exports.BindingNamespace = {}));
 var MessageSignatureOrder;
 (function (MessageSignatureOrder) {
     MessageSignatureOrder["STE"] = "sign-then-encrypt";
     MessageSignatureOrder["ETS"] = "encrypt-then-sign";
-})(MessageSignatureOrder || (exports.MessageSignatureOrder = MessageSignatureOrder = {}));
+})(MessageSignatureOrder = exports.MessageSignatureOrder || (exports.MessageSignatureOrder = {}));
 var StatusCode;
 (function (StatusCode) {
     // top-tier
@@ -45,7 +45,7 @@ var StatusCode;
     StatusCode["UnknownAttrProfile"] = "urn:oasis:names:tc:SAML:2.0:status:UnknownAttrProfile";
     StatusCode["UnknownPrincipal"] = "urn:oasis:names:tc:SAML:2.0:status:UnknownPrincipal";
     StatusCode["UnsupportedBinding"] = "urn:oasis:names:tc:SAML:2.0:status:UnsupportedBinding";
-})(StatusCode || (exports.StatusCode = StatusCode = {}));
+})(StatusCode = exports.StatusCode || (exports.StatusCode = {}));
 var namespace = {
     binding: {
         redirect: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
@@ -174,7 +174,7 @@ var ParserType;
     ParserType["SAMLResponse"] = "SAMLResponse";
     ParserType["LogoutRequest"] = "LogoutRequest";
     ParserType["LogoutResponse"] = "LogoutResponse";
-})(ParserType || (exports.ParserType = ParserType = {}));
+})(ParserType = exports.ParserType || (exports.ParserType = {}));
 var wording = {
     urlParams: {
         samlRequest: 'SAMLRequest',

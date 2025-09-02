@@ -5,7 +5,7 @@ process.env.PM2_USAGE = 'CLI';
 var cst          = require('../../constants.js');
 
 var commander    = require('commander');
-var chalk        = require('chalk');
+var chalk        = require('ansis');
 var forEachLimit = require('async/forEachLimit');
 
 var debug        = require('debug')('pm2:cli');
@@ -15,6 +15,11 @@ var tabtab       = require('../completion.js');
 var Common       = require('../Common.js');
 var PM2ioHandler = require('../API/pm2-plus/PM2IO');
 
+var semver = require('semver')
+
+if (cst.IS_BUN === true && semver.lt(process.versions.bun, '1.1.25')) {
+  throw new Error('PM2 cannot run on Bun version < 1.1.25 (cluster support)')
+}
 
 Common.determineSilentCLI();
 Common.printVersion();
@@ -504,9 +509,11 @@ commander.command('install <module|git:// url>')
   });
 
 commander.command('module:update <module|git:// url>')
+  .option('--tarball', 'is local tarball')
   .description('update a module and run it forever')
-  .action(function(plugin_name) {
-    pm2.install(plugin_name);
+  .action(function(plugin_name, opts) {
+    require('util')._extend(commander, opts);
+    pm2.install(plugin_name, commander);
   });
 
 
@@ -1006,7 +1013,7 @@ commander.command('autoinstall')
 commander.command('examples')
   .description('display pm2 usage examples')
   .action(() => {
-    console.log(cst.PREFIX_MSG + chalk.grey('pm2 usage examples:\n'));
+    console.log(cst.PREFIX_MSG + chalk.gray('pm2 usage examples:\n'));
     displayExamples();
     process.exit(cst.SUCCESS_EXIT);
   })
