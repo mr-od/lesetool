@@ -1,0 +1,4 @@
+power_usage: timestamp, consumption_kwh, scenario_id_fk
+spot_prices: spot_prices_fk, price_per_kwh, gxp_id_fk, timestamp
+solar_production: scenario_id_fk, fk_solar_production_site, production_kwh, timestamp
+

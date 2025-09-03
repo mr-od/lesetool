@@ -23,6 +23,9 @@ RUN cd extensions/panel-sql-view && npm ci && npm run build
 RUN cd extensions/panel-run-battery-sim && npm ci && npm run build
 RUN cd extensions/panel-open-link && npm ci && npm run build
 RUN cd extensions/interface-dropdown && npm ci && npm run build
+RUN cd extensions/panel-scenario-columns && npm ci && npm run build
+RUN cd extensions/endpoint-sql-runner && npm ci && npm run build
+
 
 # Production stage
 FROM directus/directus:11.9.2
@@ -39,6 +42,9 @@ COPY --from=extension-builder /app/extensions/panel-sql-view /directus/extension
 COPY --from=extension-builder /app/extensions/panel-run-battery-sim /directus/extensions/panel-run-battery-sim
 COPY --from=extension-builder /app/extensions/panel-open-link /directus/extensions/panel-open-link
 COPY --from=extension-builder /app/extensions/interface-dropdown /directus/extensions/interface-dropdown
+COPY --from=extension-builder /app/extensions/panel-scenario-columns /directus/extensions/panel-scenario-columns
+COPY --from=extension-builder /app/extensions/endpoint-sql-runner /directus/extensions/endpoint-sql-runner
+
 
 # Copy marketplace extensions (complete folders including package.json and dist)
 COPY --from=extension-builder /app/node_modules/directus-extension-sql-query-panel /directus/extensions/sql-query-panel

@@ -17,38 +17,101 @@ services:
     restart: unless-stopped
     ports:
       - "8055:8055"
+    # environment:
+    #   # Database
+    #   DB_CLIENT: pg
+    #   DB_HOST: postgres
+    #   DB_PORT: 5432
+    #   DB_DATABASE: directus
+    #   DB_USER: directus
+    #   DB_PASSWORD: directus
+      
+    #   # Cache & Sessions
+    #   CACHE_ENABLED: true
+    #   CACHE_STORE: redis
+    #   CACHE_TTL: 300  # 5 minutes cache (default might be too long)
+    #   CACHE_AUTO_PURGE: true
+    #   CACHE_NAMESPACE: directus_cache
+    #   REDIS: redis://redis:6379
+    #   SESSION_STORE: redis
+    #   SESSION_REDIS: redis://redis:6379
+      
+    #   # Security
+    #   KEY: 255d861b-5ea1-5996-9aa3-922530ec40b1
+    #   SECRET: 6116487b-cda1-52c2-b5b5-c8022c45e263
+      
+    #   # Admin user (change these!)
+    #   ADMIN_EMAIL: admin@example.com
+    #   ADMIN_PASSWORD: d1r3ctu5
+      
+    #   # General
+    #   PUBLIC_URL: http://localhost:8055
+    #   LOG_LEVEL: info
+      
+    #   # Extensions
+    #   EXTENSIONS_PATH: /directus/extensions
     environment:
-      # Database
+      # ── Pressure-based limiter (tune or disable during bulk loads)
+      PRESSURE_LIMITER_ENABLED: "true"                         # or "false" temporarily
+      PRESSURE_LIMITER_SAMPLE_INTERVAL: "250"
+      PRESSURE_LIMITER_MAX_EVENT_LOOP_UTILIZATION: "0.998"     # default 0.99
+      PRESSURE_LIMITER_MAX_EVENT_LOOP_DELAY: "2000"            # ms (default 500)
+      # Optional hard caps if you want them (bytes); omit if unknown
+      # PRESSURE_LIMITER_MAX_MEMORY_RSS: "0"
+      # PRESSURE_LIMITER_MAX_MEMORY_HEAP_USED: "0"
+      PRESSURE_LIMITER_RETRY_AFTER: "30"                       # hint to clients
+
+      # ── Request / query limits
+      MAX_PAYLOAD_SIZE: "500mb"                                # default 1mb
+      QUERY_LIMIT_MAX: "200000"                                # if you export large sets
+      EXPORT_BATCH_SIZE: "50000"
+      
+      # ── CSV Import settings
+      IMPORT_TIMEOUT: "600000"                                 # 10 minutes
+      IMPORT_BATCH_SIZE: "10000"                               # Process in smaller batches
+      DB_QUERY_TIMEOUT: "300000"                               # 5 minutes for DB queries
+
+      # ── File uploads (and chunked uploads for big files)
+      FILES_MAX_UPLOAD_SIZE: "2gb"
+      TUS_ENABLED: "true"
+      TUS_CHUNK_SIZE: "50mb"
+      TUS_UPLOAD_EXPIRATION: "30m"
+
+      # ── Rate limiting (per-IP/global) backed by Redis (optional but helpful)
+      RATE_LIMITER_ENABLED: "true"
+      RATE_LIMITER_POINTS: "200"
+      RATE_LIMITER_DURATION: "1"
+      RATE_LIMITER_STORE: "redis"
+      RATE_LIMITER_GLOBAL_ENABLED: "true"
+      RATE_LIMITER_GLOBAL_POINTS: "5000"
+      RATE_LIMITER_GLOBAL_DURATION: "1"
+
+      # ── Your existing vars (left as-is)
       DB_CLIENT: pg
       DB_HOST: postgres
       DB_PORT: 5432
       DB_DATABASE: directus
       DB_USER: directus
       DB_PASSWORD: directus
-      
-      # Cache & Sessions
-      CACHE_ENABLED: true
-      CACHE_STORE: redis
-      CACHE_TTL: 300  # 5 minutes cache (default might be too long)
-      CACHE_AUTO_PURGE: true
-      CACHE_NAMESPACE: directus_cache
+
+      CACHE_ENABLED: "true"
+      CACHE_STORE: "redis"
+      CACHE_TTL: "300"
+      CACHE_AUTO_PURGE: "true"
+      CACHE_NAMESPACE: "directus_cache"
+
       REDIS: redis://redis:6379
-      SESSION_STORE: redis
+      SESSION_STORE: "redis"
       SESSION_REDIS: redis://redis:6379
-      
-      # Security
+
       KEY: 255d861b-5ea1-5996-9aa3-922530ec40b1
       SECRET: 6116487b-cda1-52c2-b5b5-c8022c45e263
-      
-      # Admin user (change these!)
+
       ADMIN_EMAIL: admin@example.com
       ADMIN_PASSWORD: d1r3ctu5
-      
-      # General
+
       PUBLIC_URL: http://localhost:8055
-      LOG_LEVEL: info
-      
-      # Extensions
+      LOG_LEVEL: debug
       EXTENSIONS_PATH: /directus/extensions
       
     volumes:
