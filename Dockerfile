@@ -25,6 +25,7 @@ RUN cd extensions/panel-open-link && npm ci && npm run build
 RUN cd extensions/interface-dropdown && npm ci && npm run build
 RUN cd extensions/panel-scenario-columns && npm ci && npm run build
 RUN cd extensions/endpoint-sql-runner && npm ci && npm run build
+RUN cd extensions/directus-extension-csv-import && npm ci && npm run build
 
 
 # Production stage
@@ -44,6 +45,7 @@ COPY --from=extension-builder /app/extensions/panel-open-link /directus/extensio
 COPY --from=extension-builder /app/extensions/interface-dropdown /directus/extensions/interface-dropdown
 COPY --from=extension-builder /app/extensions/panel-scenario-columns /directus/extensions/panel-scenario-columns
 COPY --from=extension-builder /app/extensions/endpoint-sql-runner /directus/extensions/endpoint-sql-runner
+COPY --from=extension-builder /app/extensions/directus-extension-csv-import /directus/extensions/directus-extension-csv-import
 
 
 # Copy marketplace extensions (complete folders including package.json and dist)

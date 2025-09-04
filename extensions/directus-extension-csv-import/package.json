@@ -1,0 +1,54 @@
+{
+	"name": "directus-extension-csv-import",
+	"description": "Please enter a description for your extension",
+	"icon": "extension",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-extension-bundle"
+	],
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"directus:extension": {
+		"type": "bundle",
+		"path": {
+			"app": "dist/app.js",
+			"api": "dist/api.js"
+		},
+		"entries": [
+			{
+				"type": "panel",
+				"name": "panel-csv-import",
+				"source": "src/panel-csv-import/index.ts"
+			},
+			{
+				"type": "endpoint",
+				"name": "endpoint-csv-import",
+				"source": "src/endpoint-csv-import/index.ts"
+			}
+		],
+		"host": "^10.10.0"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link",
+		"validate": "directus-extension validate",
+		"add": "directus-extension add"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "16.0.1",
+		"@types/busboy": "^1.5.4",
+		"@types/node": "^24.3.0",
+		"@types/papaparse": "^5.3.16",
+		"typescript": "^5.9.2",
+		"vue": "^3.5.21"
+	},
+	"dependencies": {
+		"busboy": "^1.6.0",
+		"papaparse": "^5.5.3"
+	}
+}
