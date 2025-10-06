@@ -13,43 +13,10 @@ services:
       retries: 5
 
   directus:
-    image: lesetool:latest
+    image: setool:v0.0.2
     restart: unless-stopped
     ports:
       - "8055:8055"
-    # environment:
-    #   # Database
-    #   DB_CLIENT: pg
-    #   DB_HOST: postgres
-    #   DB_PORT: 5432
-    #   DB_DATABASE: directus
-    #   DB_USER: directus
-    #   DB_PASSWORD: directus
-      
-    #   # Cache & Sessions
-    #   CACHE_ENABLED: true
-    #   CACHE_STORE: redis
-    #   CACHE_TTL: 300  # 5 minutes cache (default might be too long)
-    #   CACHE_AUTO_PURGE: true
-    #   CACHE_NAMESPACE: directus_cache
-    #   REDIS: redis://redis:6379
-    #   SESSION_STORE: redis
-    #   SESSION_REDIS: redis://redis:6379
-      
-    #   # Security
-    #   KEY: 255d861b-5ea1-5996-9aa3-922530ec40b1
-    #   SECRET: 6116487b-cda1-52c2-b5b5-c8022c45e263
-      
-    #   # Admin user (change these!)
-    #   ADMIN_EMAIL: admin@example.com
-    #   ADMIN_PASSWORD: d1r3ctu5
-      
-    #   # General
-    #   PUBLIC_URL: http://localhost:8055
-    #   LOG_LEVEL: info
-      
-    #   # Extensions
-    #   EXTENSIONS_PATH: /directus/extensions
     environment:
       # ── Pressure-based limiter (tune or disable during bulk loads)
       PRESSURE_LIMITER_ENABLED: "true"                         # or "false" temporarily
@@ -90,7 +57,7 @@ services:
       DB_CLIENT: pg
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_DATABASE: directus
+      DB_DATABASE: directus_crm
       DB_USER: directus
       DB_PASSWORD: directus
 
@@ -107,10 +74,10 @@ services:
       KEY: 255d861b-5ea1-5996-9aa3-922530ec40b1
       SECRET: 6116487b-cda1-52c2-b5b5-c8022c45e263
 
-      ADMIN_EMAIL: admin@example.com
-      ADMIN_PASSWORD: d1r3ctu5
+      ADMIN_EMAIL: od@ecologic.net.nz
+      ADMIN_PASSWORD: n2kyc7ST2UG8tC
 
-      PUBLIC_URL: http://localhost:8055
+      PUBLIC_URL: https://localdev.ecoiot.co.nz
       LOG_LEVEL: debug
       EXTENSIONS_PATH: /directus/extensions
       

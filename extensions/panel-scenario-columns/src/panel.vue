@@ -40,8 +40,11 @@
       </div>
 
       <div class="control-group">
+        <v-button v-if="exportEnabled && scenarioData" @click="exportScenario" small secondary>
+          <v-icon name="file_download" /> Export Scenario
+        </v-button>
         <v-button v-if="exportEnabled && results.length > 0" @click="exportToCSV" small secondary>
-          <v-icon name="download" /> Export CSV
+          <v-icon name="download" /> Export Results
         </v-button>
       </div>
     </div>
@@ -66,8 +69,8 @@
               <span class="param-value">{{ scenarioData.scenario_code }}</span>
             </div>
             <div class="parameter-item">
-              <span class="param-label">Linked Site Code</span>
-              <span class="param-value">{{ linkedSiteCode }}</span>
+              <span class="param-label">Consumption Code</span>
+              <span class="param-value">{{ scenarioData.consumption_code }}</span>
             </div>
             <div class="parameter-item">
               <span class="param-label">Number of Houses</span>
@@ -232,27 +235,49 @@ const props = withDefaults(defineProps<Props>(), {
 
 /** Types */
 interface ScenarioRow {
+  // Primary fields
   id: number;
+  site_code: string | null;
   scenario_code: string;
-  num_houses: number | null;                 // integer → numeric
-  yearly_bill: number | null;                // real → numeric
+  spot_code: string | null;
+  consumption_code: string | null;
+  consumption_scale: string | null;
   solar_code: string | null;
-  solar_scale: string | number | null;       // varchar → coerce to numeric
+  solar_scale: string | number | null;
+  battery_code: string | null;
+  scenario_preferred: boolean | null;
+  
+  // Capacity and performance fields
+  solar_capacity_kw: number | null;
+  solar_production_yr_kwh: number | null;
   inverter_max_charge_kw: number | null;
   inverter_max_discharge_kw: number | null;
+  battery_initial_capacity_kwh: number | null;
   battery_usable_capacity_kwh: number | null;
-  lcc_code: string | null;
-  lcr_code: string | null;
-  pcr_code: string | null;
-  spot_vs_ave_lower: number | null;
-  spot_vs_ave_upper: number | null;
-  rte: number | null;
-  round_trip_pct: number | null;
-  total: number | null;
-  moving_ave_row_count: number | null;
-  separate_meter: boolean | null;
+  connection_import_capacity_kw: number | null;
+  connection_export_capacity_kw: number | null;
+  
+  // Timestamps
+  created_at: string | null;
+  updated_at: string | null;
+  
+  // Additional fields that may exist in Directus
+  num_houses?: number | null;
+  yearly_bill?: number | null;
+  lcc_code?: string | null;
+  lcr_code?: string | null;
+  pcr_code?: string | null;
   ppc_code?: string | null;
-  site: number | null; // FK to public.site(id)
+  spot_vs_ave_lower?: number | null;
+  spot_vs_ave_upper?: number | null;
+  rte?: number | null;
+  round_trip_pct?: number | null;
+  total?: number | null;
+  moving_ave_row_count?: number | null;
+  separate_meter?: boolean | null;
+  
+  // Any other fields
+  [key: string]: any;
 }
 interface ResultRow {
   summary_id: number;
@@ -356,34 +381,21 @@ async function runAnalysis() {
       params: {
         filter: { scenario_code: { _eq: selectedScenario.value } },
         limit: 1,
-        fields: [
-          'id','scenario_code','num_houses','yearly_bill','solar_code','solar_scale',
-          'inverter_max_charge_kw','inverter_max_discharge_kw','battery_usable_capacity_kwh',
-          'lcc_code','lcr_code','pcr_code',
-          'spot_vs_ave_lower','spot_vs_ave_upper','rte','round_trip_pct','total',
-          'moving_ave_row_count','separate_meter','ppc_code',
-          'site'
-        ]
+        fields: ['*'] // Fetch all fields from scenario table
       }
     });
     const row: ScenarioRow | undefined = sData?.data?.[0];
     if (!row) throw new Error('Scenario not found');
     scenarioData.value = row;
 
-    // 2) Resolve site_code via FK
-    linkedSiteCode.value = null;
-    if (row.site != null) {
-      const { data: siteResp } = await api.get(`/items/site/${row.site}`, {
-        params: { fields: ['site_code'] }
-      });
-      linkedSiteCode.value = siteResp?.data?.site_code ?? null;
-    }
-    if (!linkedSiteCode.value) throw new Error('Linked site_code not found for this scenario');
+    // 2) Use consumption_code directly from scenario
+    if (!row.consumption_code) throw new Error('consumption_code not found in scenario');
+    linkedSiteCode.value = row.consumption_code; // For display purposes
 
     // 3) Build SQL (named args)
     const sql = `
       SELECT * FROM ${props.functionSchema}.${props.functionName}(
-        _site_code := ${q(linkedSiteCode.value)},
+        _consumption_code := ${q(row.consumption_code)},
         _num_houses := ${n(row.num_houses)},
         _solar_scale := ${n(row.solar_scale)},
         _yearly_bill := ${n(row.yearly_bill)},
@@ -400,7 +412,8 @@ async function runAnalysis() {
         _round_trip_pct := ${n(row.round_trip_pct)},
         _total := ${n(row.total)},
         _moving_ave_row_count := ${n(row.moving_ave_row_count)},
-        _separate_meter := ${b(!!row.separate_meter)}
+        _separate_meter := ${b(!!row.separate_meter)},
+        _ppc_code := ${q(row.ppc_code)}
       )
     `;
     lastSql.value = sql.trim();
@@ -422,7 +435,70 @@ async function runAnalysis() {
   }
 }
 
-/** Export CSV */
+/** Export Scenario Parameters */
+function exportScenario() {
+  if (!scenarioData.value) return;
+  const row = scenarioData.value;
+  
+  // Helper function to format values for CSV
+  const formatValue = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'boolean') return value.toString();
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  };
+  
+  // Section 1: ALL Scenario Data (dynamically from all fields)
+  const scenarioRows = ['Section,Parameter,Value'];
+  
+  // Add all fields from the scenario row
+  Object.keys(row).forEach(key => {
+    const value = formatValue(row[key]);
+    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    scenarioRows.push(`All Scenario Data,${displayKey},${value}`);
+  });
+  
+  // Add empty row separator
+  scenarioRows.push('');
+  
+  // Section 2: Function Parameters Used (only the ones passed to f_summary_year)
+  const functionParams = [
+    { key: 'consumption_code', param: '_consumption_code' },
+    { key: 'num_houses', param: '_num_houses' },
+    { key: 'solar_scale', param: '_solar_scale' },
+    { key: 'yearly_bill', param: '_yearly_bill' },
+    { key: 'solar_code', param: '_solar_code' },
+    { key: 'lcc_code', param: '_lcc_code' },
+    { key: 'lcr_code', param: '_lcr_code' },
+    { key: 'pcr_code', param: '_pcr_code' },
+    { key: 'spot_vs_ave_lower', param: '_spot_vs_ave_lower' },
+    { key: 'spot_vs_ave_upper', param: '_spot_vs_ave_upper' },
+    { key: 'inverter_max_charge_kw', param: '_charge_max' },
+    { key: 'inverter_max_discharge_kw', param: '_discharge_max' },
+    { key: 'rte', param: '_rte' },
+    { key: 'battery_usable_capacity_kwh', param: '_capacity' },
+    { key: 'round_trip_pct', param: '_round_trip_pct' },
+    { key: 'total', param: '_total' },
+    { key: 'moving_ave_row_count', param: '_moving_ave_row_count' },
+    { key: 'separate_meter', param: '_separate_meter', transform: (v: any) => !!v },
+    { key: 'ppc_code', param: '_ppc_code' }
+  ];
+  
+  functionParams.forEach(({ key, param, transform }) => {
+    let value = row[key];
+    if (transform) value = transform(value);
+    scenarioRows.push(`Function Parameters,${param},${formatValue(value)}`);
+  });
+  
+  const csv = scenarioRows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `scenario_${selectedScenario.value}_complete_${Date.now()}.csv`;
+  link.click();
+}
+
+/** Export Results CSV */
 function exportToCSV() {
   if (results.value.length === 0) return;
   const headers = ['Metric', ...yearColumns];
@@ -434,7 +510,7 @@ function exportToCSV() {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `scenario_${selectedScenario.value}_${Date.now()}.csv`;
+  link.download = `scenario_${selectedScenario.value}_results_${Date.now()}.csv`;
   link.click();
 }
 
@@ -456,28 +532,15 @@ async function loadScenarioData() {
       params: {
         filter: { scenario_code: { _eq: selectedScenario.value } },
         limit: 1,
-        fields: [
-          'id','scenario_code','num_houses','yearly_bill','solar_code','solar_scale',
-          'inverter_max_charge_kw','inverter_max_discharge_kw','battery_usable_capacity_kwh',
-          'lcc_code','lcr_code','pcr_code',
-          'spot_vs_ave_lower','spot_vs_ave_upper','rte','round_trip_pct','total',
-          'moving_ave_row_count','separate_meter','ppc_code',
-          'site'
-        ]
+        fields: ['*'] // Fetch all fields from scenario table
       }
     });
     const row: ScenarioRow | undefined = sData?.data?.[0];
     if (!row) return;
     scenarioData.value = row;
 
-    // Load linked site code
-    linkedSiteCode.value = null;
-    if (row.site != null) {
-      const { data: siteResp } = await api.get(`/items/site/${row.site}`, {
-        params: { fields: ['site_code'] }
-      });
-      linkedSiteCode.value = siteResp?.data?.site_code ?? null;
-    }
+    // Use consumption_code directly
+    linkedSiteCode.value = row.consumption_code;
   } catch (err) {
     console.warn('Failed to load scenario data:', err);
   }

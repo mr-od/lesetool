@@ -1,0 +1,106 @@
+services:
+  redis:
+    image: ${REDIS_IMAGE:-redis:7-alpine}
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecologic_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  directus:
+    image: ${DIRECTUS_IMAGE:-setool:latest}
+    restart: unless-stopped
+    ports:
+      - "8055:8055"
+    environment:
+      # ── Database Configuration
+      DB_CLIENT: ${DB_CLIENT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      
+      # ── Cache & Session Configuration
+      CACHE_ENABLED: ${CACHE_ENABLED}
+      CACHE_STORE: ${CACHE_STORE}
+      CACHE_TTL: ${CACHE_TTL}
+      CACHE_AUTO_PURGE: ${CACHE_AUTO_PURGE}
+      CACHE_NAMESPACE: ${CACHE_NAMESPACE}
+      REDIS: ${REDIS}
+      SESSION_STORE: ${SESSION_STORE}
+      SESSION_REDIS: ${SESSION_REDIS}
+      
+      # ── Security Configuration
+      KEY: ${KEY}
+      SECRET: ${SECRET}
+      
+      # ── Admin User Configuration
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      
+      # ── Application Configuration
+      PUBLIC_URL: ${PUBLIC_URL}
+      LOG_LEVEL: ${LOG_LEVEL}
+      EXTENSIONS_PATH: ${EXTENSIONS_PATH}
+      
+      # ── Performance & Limits Configuration
+      PRESSURE_LIMITER_ENABLED: ${PRESSURE_LIMITER_ENABLED}
+      PRESSURE_LIMITER_SAMPLE_INTERVAL: ${PRESSURE_LIMITER_SAMPLE_INTERVAL}
+      PRESSURE_LIMITER_MAX_EVENT_LOOP_UTILIZATION: ${PRESSURE_LIMITER_MAX_EVENT_LOOP_UTILIZATION}
+      PRESSURE_LIMITER_MAX_EVENT_LOOP_DELAY: ${PRESSURE_LIMITER_MAX_EVENT_LOOP_DELAY}
+      PRESSURE_LIMITER_RETRY_AFTER: ${PRESSURE_LIMITER_RETRY_AFTER}
+      
+      # ── Request & Query Limits
+      MAX_PAYLOAD_SIZE: ${MAX_PAYLOAD_SIZE}
+      QUERY_LIMIT_MAX: ${QUERY_LIMIT_MAX}
+      EXPORT_BATCH_SIZE: ${EXPORT_BATCH_SIZE}
+      
+      # ── CSV Import Settings
+      IMPORT_TIMEOUT: ${IMPORT_TIMEOUT}
+      IMPORT_BATCH_SIZE: ${IMPORT_BATCH_SIZE}
+      DB_QUERY_TIMEOUT: ${DB_QUERY_TIMEOUT}
+      
+      # ── File Upload Configuration
+      FILES_MAX_UPLOAD_SIZE: ${FILES_MAX_UPLOAD_SIZE}
+      TUS_ENABLED: ${TUS_ENABLED}
+      TUS_CHUNK_SIZE: ${TUS_CHUNK_SIZE}
+      TUS_UPLOAD_EXPIRATION: ${TUS_UPLOAD_EXPIRATION}
+      
+      # ── Rate Limiting Configuration
+      RATE_LIMITER_ENABLED: ${RATE_LIMITER_ENABLED}
+      RATE_LIMITER_POINTS: ${RATE_LIMITER_POINTS}
+      RATE_LIMITER_DURATION: ${RATE_LIMITER_DURATION}
+      RATE_LIMITER_STORE: ${RATE_LIMITER_STORE}
+      RATE_LIMITER_GLOBAL_ENABLED: ${RATE_LIMITER_GLOBAL_ENABLED}
+      RATE_LIMITER_GLOBAL_POINTS: ${RATE_LIMITER_GLOBAL_POINTS}
+      RATE_LIMITER_GLOBAL_DURATION: ${RATE_LIMITER_GLOBAL_DURATION}
+      
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_database:/directus/database
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - ecologic_net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8055/server/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  redis_data:
+  directus_uploads:
+  directus_database:
+
+networks:
+  ecologic_net:
+    name: ${NETWORK_NAME:-ecologic_net}
+    external: true

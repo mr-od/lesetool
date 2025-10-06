@@ -1,0 +1,2 @@
+Log started at 2025-09-06T11-08-00-399Z
+2025-09-06T11:13:24.677Z - ERROR: Directus Error: Missing or invalid unit_price or quantity. (Status: 500) {"code":"INTERNAL_SERVER_ERROR"} Context: {}
